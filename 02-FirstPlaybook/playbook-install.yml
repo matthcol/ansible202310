@@ -1,0 +1,42 @@
+---
+- name: Install App Server
+  hosts: appserver
+  become: yes
+  tasks:
+    - name: Create App Group
+      ansible.builtin.group:
+        name: myuser
+        gid: 950
+    - name: Create App User
+      ansible.builtin.user:
+        name: myuser
+        # shell: /usr/bin/bash
+        shell: /usr/sbin/nologin
+        uid: 950
+    - name: Create App Directory
+      ansible.builtin.file:
+        path: /opt/myapp
+        state: directory
+        # appartient au user/group ci-dessus en rwxr-x---
+        owner: myuser
+        group: myuser
+        mode: 0750
+    - name: Copy App Artifact
+      ansible.builtin.copy:
+        src: artifacts/start.sh
+        dest: /opt/myapp
+        owner: myuser
+        group: myuser
+        mode: 0750
+    - name: Copy App Config
+      ansible.builtin.template:
+        src: templates/app.conf
+        dest: /opt/myapp
+        owner: myuser
+        group: myuser
+        mode: 0640
+      vars:
+        dbname: moviedb
+        # dbhost: mydb.mydomain.org
+
+        

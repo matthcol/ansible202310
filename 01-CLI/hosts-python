@@ -1,0 +1,5 @@
+[dummy]
+192.168.56.132
+
+[dummy:vars]
+ansible_python_interpreter=/usr/bin/python3

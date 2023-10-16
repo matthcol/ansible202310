@@ -1,0 +1,20 @@
+---
+- name: Desinstall App Server
+  hosts: appserver
+  become: yes
+  tasks:
+    - name: Delete App Directory
+      ansible.builtin.file:
+        path: /opt/myapp
+        state: absent
+    - name: Remove App User
+      ansible.builtin.user:
+        name: myuser
+        state: absent
+        remove: yes
+    - name: Remove App Group
+      ansible.builtin.group:
+        name: myuser
+        state: absent
+
+
