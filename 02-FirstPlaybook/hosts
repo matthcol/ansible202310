@@ -1,2 +1,5 @@
 [appserver]
-192.168.56.132
+host1.example.org
+host2.example.org
+host3.example.org
+host4.example.org
