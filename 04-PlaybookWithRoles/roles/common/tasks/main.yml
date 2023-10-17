@@ -1,3 +1,5 @@
 ---
 # tasks file for common
-  
+- name: Apt Update
+  ansible.builtin.apt:
+    update_cache: true

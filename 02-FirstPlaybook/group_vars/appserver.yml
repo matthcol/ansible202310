@@ -1,0 +1,13 @@
+# Database configuration
+dbhost: dbtest.myapp.org
+
+# User
+username: myuser
+useruid: 950
+usergroup: myuser
+usergid: 950
+
+# Files
+appdir: /opt/myapp
+appexe: start.sh
+appconf: app.conf

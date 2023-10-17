@@ -1,15 +1,66 @@
 ---
+- name: Common Install Softwares and Services
+  hosts: all
+  become: yes
+  tasks:
+    - name: Apt Update
+      ansible.builtin.apt:
+        update_cache: true
+  
+- name: App Install Softwares and Services
+  hosts: appserver
+  become: yes
+  tasks:
+    - name: Install Apache Httpd
+      ansible.builtin.apt:
+        name: "{{ item }}"
+      loop:
+        - apache2
+        - ntp
+        - net-tools
+    - name: Service Started
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+      loop:
+        - apache2
+        - ntp
+      ignore_errors: true
+
+    - name: Populate service facts
+      ansible.builtin.service_facts:
+
+    - name: Print service facts
+      ansible.builtin.debug:
+        var: ansible_facts.services[item]
+      loop:
+        - 'apache2.service'
+        - 'ntp.service'
+
+    # TODO: stop if apache is not running
+    - name: Stop if Apache not running
+      ansible.builtin.debug:
+        var: ansible_facts.services['apache2.service'].state
+      failed_when: ansible_facts.services['apache2.service'].state != 'running'
+        
+
 - name: Install App Server
   hosts: appserver
   become: yes
   tasks:
+    - name: Debug User Name
+      ansible.builtin.debug:
+        var: username
+    - name: Debug Group Name
+      ansible.builtin.debug:
+        msg: group name= {{usergroup}}
     - name: Create App Group
       ansible.builtin.group:
-        name: myuser
+        name: "{{ usergroup }}"
         gid: 950
     - name: Create App User
       ansible.builtin.user:
-        name: myuser
+        name: "{{ username }}"
         # shell: /usr/bin/bash
         shell: /usr/sbin/nologin
         uid: 950
@@ -18,25 +69,26 @@
         path: /opt/myapp
         state: directory
         # appartient au user/group ci-dessus en rwxr-x---
-        owner: myuser
-        group: myuser
+        owner: "{{ username }}"
+        group: "{{ usergroup }}"
         mode: 0750
     - name: Copy App Artifact
       ansible.builtin.copy:
         src: artifacts/start.sh
-        dest: /opt/myapp
-        owner: myuser
-        group: myuser
+        dest: "{{ appexe }}"
+        owner: "{{ username }}"
+        group: "{{ usergroup }}"
         mode: 0750
     - name: Copy App Config
       ansible.builtin.template:
-        src: templates/app.conf
-        dest: /opt/myapp
-        owner: myuser
-        group: myuser
+        src: templates/{{ appconf }}.j2
+        dest: "{{ appdir }}/{{ appconf }}"
+        owner: "{{ username }}"
+        group: "{{ usergroup }}"
         mode: 0640
       vars:
         dbname: moviedb
         # dbhost: mydb.mydomain.org
+
 
         

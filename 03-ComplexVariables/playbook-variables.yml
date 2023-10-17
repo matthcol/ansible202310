@@ -1,0 +1,98 @@
+---
+- name: List Variable Demo
+  hosts: appserver
+  tasks:
+    - name: Print mylist
+      ansible.builtin.debug:
+        var: mylist
+    - name: Print packages
+      ansible.builtin.debug:
+        var: packages
+    - name: Print services
+      ansible.builtin.debug:
+        var: services
+    - name: Print first package
+      ansible.builtin.debug:
+        # index in a list starts at 0 .. n-1
+        var: packages[0]
+    - name: Repeat print package
+      ansible.builtin.debug:
+        var: item
+      loop: "{{ packages }}"
+    - name: Start all services
+      ansible.builtin.systemd:
+        name: "{{ item }}"
+        state: started
+      loop: "{{ services }}"
+      ignore_errors: true
+  vars:
+    mylist: [1,4,6]
+    packages: [apache2, ntp, 'net-tools']
+    services:
+      - apache2
+      - ssh
+      - ntp
+  tags: LIST
+
+# PLAY 2
+- name: Dictionary Variable Demo
+  hosts: appserver
+  tasks:
+    - name: Print Dictionary
+      ansible.builtin.debug:
+        var: mydict
+    - name: Print One Element of Dictionary 1
+      ansible.builtin.debug:
+        var: mydict.fr
+    - name: Print One Element of Dictionary 2
+      ansible.builtin.debug:
+        var: mydict['fr']
+    - name: Print Element present or absent
+      ansible.builtin.debug:
+        var: mydict[item] | default("NO_LANGUAGE")
+      loop:
+        - fr
+        - de
+
+  vars:
+    mydict: {'fr': 'FRENCH', 'en': 'ENGLISH', 'es': 'SPANISH'}
+  tags: DICT
+
+# PLAY 3
+- name: Magic Variables
+  hosts: appserver
+  tasks:
+    - name: Print ansible_hostname
+      ansible.builtin.debug:
+        var: ansible_hostname
+    - name: Print part of groups
+      ansible.builtin.debug:
+        var: groups.appserver
+    - name: Print part of hostvars (all inventory)
+      ansible.builtin.debug:
+        var: hostvars['host1.example.org']['ansible_facts']
+    - name: Print part of ansible_facts
+      ansible.builtin.debug:
+        var: ansible_facts[item]
+      loop:
+        - os_family
+        - distribution
+        - distribution_major_version
+    - name: Only on Debian 11
+      ansible.builtin.debug:
+        msg: Doing something only on Debian 11
+      when: ansible_facts.distribution == 'Debian' 
+            and ansible_facts.distribution_major_version == '11'
+    - name: Only on Debian 10
+      ansible.builtin.debug:
+        msg: Doing something only on Debian 10
+      when: 
+        - ansible_facts.distribution == 'Debian'
+        - ansible_facts.distribution_major_version == '10'
+    - name: Only on Debian 9+
+      ansible.builtin.debug:
+        msg: Doing something only on Debian 9 and more
+      when: 
+        - ansible_facts.distribution == 'Debian'
+        - ansible_facts.distribution_major_version | int > 9
+  tags: MAGIC

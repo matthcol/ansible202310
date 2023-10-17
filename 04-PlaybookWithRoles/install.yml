@@ -5,6 +5,7 @@
     - common
     - db
   tags: DB
+  become: yes
 
 - name: Install API
   hosts: appserver
@@ -12,3 +13,4 @@
     - common
     - api
   tags: API
+  become: yes
