@@ -1,0 +1,14 @@
+---
+- name: Install DB
+  hosts: dbserver
+  roles:
+    - common
+    - db
+  tags: DB
+
+- name: Install API
+  hosts: appserver
+  roles:
+    - common
+    - api
+  tags: API
